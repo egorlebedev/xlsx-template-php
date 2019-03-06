@@ -6,9 +6,15 @@
 
 namespace XLSXTemplate;
 
-use \PHPExcel_IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\RowIterator;
+
+
+/*use \PHPExcel_IOFactory;
 use \PHPExcel_Worksheet;
-use \PHPExcel_Worksheet_RowIterator;
+use \PHPExcel_Worksheet_RowIterator;*/
 
 class Templator
 {
@@ -74,8 +80,8 @@ class Templator
         }
 
         try {
-            $inputFileType = PHPExcel_IOFactory::identify($this->templateFile);
-            $objReader = PHPExcel_IOFactory::createReader($inputFileType);
+            $inputFileType = IOFactory::identify($this->templateFile);
+            $objReader = IOFactory::createReader($inputFileType);
             $objPHPExcel = $objReader->load($this->templateFile);
         } catch(\Exception $e) {
             new \Exception('Error loading file "'.pathinfo($this->templateFile, PATHINFO_BASENAME).'": '.$e->getMessage());
@@ -89,7 +95,7 @@ class Templator
 
         foreach ($rowIterator as $row) {
             $cellIterator = $row->getCellIterator();
-            $cellIterator->setIterateOnlyExistingCells($this->needsIgnoreEmpty);
+            $cellIterator->setIterateOnlyExistingCells(!$this->needsIgnoreEmpty);
 
             /** @var \PHPExcel_Cell $cell */
             foreach ($cellIterator as $cell) {
@@ -124,7 +130,7 @@ class Templator
      */
     public function save()
     {
-        $objWriter = PHPExcel_IOFactory::createWriter($this->objPHPExcel, 'Excel2007');
+        $objWriter = IOFactory::createWriter($this->objPHPExcel, 'Xlsx');
         $objWriter->save($this->outputDir.$this->outputFileName);
     }
 
@@ -247,7 +253,7 @@ class Templator
      * @param string $pCoordinate
      * @param string $cellValue
      */
-    private function replaceСontent(PHPExcel_Worksheet $worksheet, $pCoordinate, $cellValue)
+    private function replaceСontent(Worksheet $worksheet, $pCoordinate, $cellValue)
     {
         $templateKey = $this->extractTemplateKey($cellValue);
         $worksheet->setCellValue($pCoordinate, $this->settings->getValue($templateKey));
